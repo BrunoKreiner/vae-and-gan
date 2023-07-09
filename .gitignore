@@ -2,6 +2,12 @@
 __pycache__/
 *.py[cod]
 *$py.class
+/notebooks/wandb/
+./wandb/*
+./data/landscapes/*/**
+./stylegan2-pytorch/*
+data/stylegan
+./notebooks/wandb/**
 
 # C extensions
 *.so

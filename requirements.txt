@@ -1,0 +1,7 @@
+torch
+torchvision
+wandb
+matplotlib
+scikit-learn
+plotly
+tensorboard

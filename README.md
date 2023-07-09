@@ -2,6 +2,13 @@
 
 In this minichallenge, we pre-train a VAE that is then used to train a GAN.
 
+## Installation
+
+conda create -n fml
+conda activate fml
+conda install pip
+pip install -r requirements.txt
+
 ## VAE
 
 The VAE (Variational Autoencoder) model encodes image data into latent space using convolutional layers. It uses 2D convolutional layers to progressively reduce the spatial dimensions of the input. Then, a decoder part is used with 2d deconvolutional layers to increase the spatial dimensions back to the original size. The interesting thing is that the model learns to generate images of the same style as the training data from random noise. The following picture shows the model architecture:
@@ -50,7 +57,49 @@ z = [batch_size, latent_dim]
 
 Each element z[i] is computed as mu[i] + sigma[i] * eps[i]
 
+### Limitations
+
+- Due to the probabilistic approach, VAE could oversimplify the distribution of the latent variables since we assume its a standard normal distribution.
+- The process of reconstruction can be seen as an averaging process over the likely values in the learned data distribution. Since there is a stochastic process involved, we will never get sharp images. While reconstructing, the VAE is considering a distribution of possible pixel values.
+- VAEs lack control over specifics of the generated output. 
+- Determining the dimensions of the latent space is challenging (hyperparameter). A small latent space might not capture all of the necessary information, while a large latent space might capture too much unnecessary detail.
 
 ## GAN
 
+GANs (Generative Adversarial Network) generate new data with the same statistics as the training set similar to VAEs. They also have a decoder part just like the VAE but scratch the encoder part. Therefore they can't be used for data compression. GANs train two models simultaneously: a Discriminator and a Generator. The Generator generates an image and the Discriminator tries to guess whether it is a real example or not. The generator is therefore trained to fool the discriminator. This makes GANs produce sharper images than VAEs. GANs are similar to mimicry in evolutionary biology, with an evolutionary arms race between both networks. 
+
+![GAN architecture](image/README/gan.png)
+
+### Generator
+
+To generate images for the discriminator, we sample some noise z using a normal or uniform distribution. With z as an input, we use a generator to create an image ($x=G(z)$). Like in the VAE, z is a latent space that gets convoluted up to a bigger size. 
+
+### Discriminator
+
+- Gans tend to generate sharper images compared to VAEs. This is due to its generatorxdiscriminator learning
+- trainin
+
+### Limitations
+- Training can be unstable. Two networks are trained simultaneously. If one overpowers, it can lead to issues like mode collapse.
+- Mode collapse = scenario where generator produces limited varieties of samples or even same sample regardless of input. 
+- Can't be used as compression like VAE.
+- Don't converge (Discriminator and Generator constantly battle one another)
+
+
 ## Data
+
+
+Data is 8300 images of comic faces that are preprocessed to be 64x64. These images are very small to begin with.
+
+## Problems
+
+images are rectangles, but we preprocess them to be squared for the cnn
+
+
+## Sources:
+VAE: https://towardsdatascience.com/understanding-variational-autoencoders-vaes-f70510919f73
+Wikipedia, ChatGPT
+http://taylordenouden.com/VAE-Latent-Space-Explorer/
+https://www.kaggle.com/datasets/arnaud58/landscape-pictures?resource=download&select=00000001_%282%29.jpg
+
+GAN: https://jonathan-hui.medium.com/gan-whats-generative-adversarial-networks-and-its-application-f39ed278ef09
