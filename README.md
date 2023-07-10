@@ -1,13 +1,25 @@
 # VAE + GAN Minichallenge
 
-In this minichallenge, we pre-train a VAE that is then used to train a GAN.
+In this minichallenge, I try to understand and explain the mechanics of VAEs and GANs. I train several small models on basic data. 
+Reports:
+gan w&b: https://wandb.ai/22hs_i4ds20/gan_training/
+vae w&b: https://wandb.ai/22hs_i4ds20/vae_training
 
 ## Installation
 
+```
 conda create -n fml
 conda activate fml
 conda install pip
 pip install -r requirements.txt
+```
+
+Run tensorboard:
+```
+cd notebooks
+tensorboard --logdir runs/
+```
+
 
 ## VAE
 
@@ -85,39 +97,46 @@ The discriminator is trained seperately from the generator. Its loss is connecte
 
 ![1688975354888](image/README/1688975354888.png)
 
-Where D(x) is the discriminator's output when given a real image and D(G(z)) is the disciminator's output given a fake image. The better the classifier, the more the first log term gets closer to 0. The same is true for the second term (1-D(G(z)) where the term is closer to 0, when it correctly classifies the fake image as fake (0). Therefore the loss is higher for bad predictions.
+Where D(x) is the discriminator's output when given a real image and D(G(z)) is the disciminator's output given a fake image. The better the classifier, the more the first log term gets closer to 0. The same is true for the second term (1-D(G(z)) where the term is closer to 0, when it correctly classifies the fake image as fake (0). Therefore the loss is higher for bad predictions. We want to maximize this term.
 
 - Gans tend to generate sharper images compared to VAEs. This is due to its generatorxdiscriminator learning
-- trainin
 
-### Limitations
+### Limitations + Comparison to VAE
 
 - Training can be unstable. Two networks are trained simultaneously. If one overpowers, it can lead to issues like mode collapse.
-- Mode collapse = scenario where generator produces limited varieties of samples or even same sample regardless of input.
-- Can't be used as compression like VAE.
-- Don't converge (Discriminator and Generator constantly battle one another)
+- Mode collapse = scenario where generator produces limited varieties of samples or even same sample regardless of input. The generator could find an image the discriminator finds difficult to classify as fake. This image could be generated over and over again.
+- Can't be used as compression like VAE. They are primarily used for generating new data that resembles the input data.
+- Can fail to converge or converge to 0 losses very quickly (Discriminator and Generator constantly battle one another).
 
 ## Data
 
-Data is 8300 images of comic faces that are preprocessed to be 64x64. These images are very small to begin with. The transformations applied were 
+Data is 8300 images of comic faces that are preprocessed to be 64x64. These images are very small to begin with. The only additional processing step done is normalization. 
 
-transform = transforms.Compose([
-
-    transforms.Resize(image_size),
-
-    transforms.CenterCrop(image_size),
-
-    transforms.ToTensor(),
-
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
-
-])
-
+I also experimented on the following data but the VAE didn't learn correctly:
 https://www.kaggle.com/datasets/arnaud58/landscape-pictures?resource=download&select=00000001_%282%29.jpg
 
-## Problems
+## Model
 
-images are rectangles, but we preprocess them to be squared for the cnn
+The model architetures for the VAE and GAN can be seen in the respective notebooks: (VAE training notebook)[./notebooks/train_vae.ipynb], (GAN training notebooks)[./notebooks/train_gan.ipynb]
+
+## Problems + Discussion
+
+During training, the GAN didn't generate coherent images. The discriminator and generator losses converge to 0 very quickly and stop learning. Here are some ideas for improvement:
+
+- Loss function could be further modified. In the w&b report below, the Wasserstein loss was tested but it didn't lead to much improvement. 
+- We could penalize the gradients for either model.
+- We could do further regularisations: 
+    - Feature matching (Loss is adjusted, so the generator matches the expected value of the features on an intermediate layer of the discriminator (https://paperswithcode.com/method/feature-matching))
+    - Dropout
+    - Data Augmentation
+- We could initialize discriminator or generator differently 
+    - We could use the pretrained VAE decoder as the generator (usually discriminator learns quicker since it has an easier learning objective)
+- We could use Conditioning, a method that guides the generator with extra information such as a label or an attribute.
+
+gan w&b: https://wandb.ai/22hs_i4ds20/gan_training/
+vae w&b: https://wandb.ai/22hs_i4ds20/vae_training
+
+One question that came up looking at the curves was: "Why should the Kullback-Leibler Divergence go down during training". This is because that implies that our learned distribution is getting closer to the prior.
 
 ## Sources:
 
